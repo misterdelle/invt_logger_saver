@@ -36,14 +36,14 @@ func init() {
 	flag.Parse()
 
 	if app.Env != "" {
-		fmt.Printf("app.Env        : %s \n", app.Env)
+		fmt.Printf("app.Env          : %s \n", app.Env)
 		godotenv.Load(".env." + app.Env + ".local")
 		godotenv.Load(".env." + app.Env)
 	} else {
 		fmt.Println("app.Env NON settato, carico i dati dal file .env")
 		godotenv.Load() // The Original .env
 		app.Env = os.Getenv("Env")
-		fmt.Printf("app.Env                 : %s \n", app.Env)
+		fmt.Printf("app.Env          : %s \n", app.Env)
 	}
 
 	app.MQTTURL = os.Getenv("mqtt.url")
