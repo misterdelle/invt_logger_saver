@@ -1,0 +1,6 @@
+services:
+  invt:
+    image: misterdelle/invt-logger-saver:latest
+    restart: unless-stopped
+    volumes:
+    - "./.env:/.env"
