@@ -1,8 +1,10 @@
 package main
 
 import (
+	// "fmt"
 	"fmt"
 	"invt_logger_saver/pkg/data"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -11,7 +13,7 @@ import (
 )
 
 func onMessageReceived(client mqtt.Client, message mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", message.Payload(), message.Topic())
+	log.Printf("Received message: %s from topic: %s\n", message.Payload(), message.Topic())
 
 	parseStationData(message.Payload(), message.Topic())
 }
@@ -53,7 +55,7 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 		lastUpdate := strings.TrimSpace(string(msgPayload))
 		lastUpdateTS, err := time.Parse("2006-01-02 15:04:05", lastUpdate)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(fmt.Sprintf("Error parsing lastUpdateTime: %s", err))
 		}
 		stationData.LastUpdateTime = lastUpdateTS
 		stationData.LastUpdateTimeRead = true
@@ -71,7 +73,7 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 		// Scrivi nel db
 		_, err := RetryWithBackoff(app.DB.InsertStationData, 5, 2*time.Second, stationData)
 		if err != nil {
-			fmt.Println(fmt.Sprintf("Error %s", err))
+			log.Println(fmt.Sprintf("Error %s", err))
 		}
 
 		stationData = data.NewStation()
