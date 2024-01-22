@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"time"
 )
@@ -22,7 +23,7 @@ func RetryWithBackoff(fn RetryFunc, maxRetries int, baseDelay time.Duration, arg
 
 		secRetry := math.Pow(2, float64(i))
 		delay := time.Duration(secRetry) * baseDelay
-		fmt.Printf("Attempt %d failed, retrying in %v: %v", i+1, delay, err)
+		log.Printf("Attempt %d failed, retrying in %v: %v", i+1, delay, err)
 		time.Sleep(delay)
 	}
 	return nil, fmt.Errorf("after %d attempts, last error: %s", maxRetries, err)

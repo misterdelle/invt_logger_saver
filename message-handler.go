@@ -20,26 +20,32 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 
 	if msgTopic == app.MQTTTopicName+"/station/pvDayEnergy" {
 		stationData.TotalProduction = fromByteArrayToFloat32(msgPayload)
+		stationData.TotalProductionRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/gridDayEnergy" {
 		stationData.FeedIn = fromByteArrayToFloat32(msgPayload)
+		stationData.FeedInRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/batteryChargeDayEnergy" {
 		stationData.BatteryCharge = fromByteArrayToFloat32(msgPayload)
+		stationData.BatteryChargeRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/loadDayEnergy" {
 		stationData.TotalConsumption = fromByteArrayToFloat32(msgPayload)
+		stationData.TotalConsumptionRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/purchasingDayEnergy" {
 		stationData.PowerPurchased = fromByteArrayToFloat32(msgPayload)
+		stationData.PowerPurchasedRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/batteryDischargeDayEnergy" {
 		stationData.BatteryDischarge = fromByteArrayToFloat32(msgPayload)
+		stationData.BatteryDischargeRead = true
 	}
 
 	if msgTopic == app.MQTTTopicName+"/station/lastUpdateTime" {
@@ -50,13 +56,14 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 			fmt.Println(err)
 		}
 		stationData.LastUpdateTime = lastUpdateTS
+		stationData.LastUpdateTimeRead = true
 	}
 
-	if stationData.TotalProduction >= 0 && stationData.FeedIn >= 0 && stationData.BatteryCharge >= 0 && stationData.SelfUsed == -1 {
+	if stationData.TotalProductionRead && stationData.FeedInRead && stationData.BatteryChargeRead {
 		stationData.SelfUsed = stationData.TotalProduction - stationData.FeedIn - stationData.BatteryCharge
 	}
 
-	if stationData.TotalConsumption >= 0 && stationData.PowerPurchased >= 0 && stationData.BatteryDischarge >= 0 && stationData.Production == -1 {
+	if stationData.TotalConsumptionRead && stationData.PowerPurchasedRead && stationData.BatteryDischargeRead {
 		stationData.Production = stationData.TotalConsumption - stationData.PowerPurchased - stationData.BatteryDischarge
 	}
 

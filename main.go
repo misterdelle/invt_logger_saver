@@ -6,6 +6,7 @@ import (
 	"invt_logger_saver/pkg/data"
 	"invt_logger_saver/pkg/db"
 	"invt_logger_saver/pkg/repository"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -36,11 +37,11 @@ func init() {
 	flag.Parse()
 
 	if app.Env != "" {
-		fmt.Printf("app.Env          : %s \n", app.Env)
+		log.Printf("app.Env          : %s \n", app.Env)
 		godotenv.Load(".env." + app.Env + ".local")
 		godotenv.Load(".env." + app.Env)
 	} else {
-		fmt.Println("app.Env NON settato, carico i dati dal file .env")
+		log.Println("app.Env NON settato, carico i dati dal file .env")
 		godotenv.Load() // The Original .env
 		app.Env = os.Getenv("Env")
 		fmt.Printf("app.Env          : %s \n", app.Env)
@@ -52,17 +53,17 @@ func init() {
 	app.MQTTTopicName = os.Getenv("mqtt.prefix")
 	app.DSN = os.Getenv("DSN")
 
-	fmt.Printf("app.MQTTURL      : %s \n", app.MQTTURL)
-	fmt.Printf("app.MQTTUser     : %s \n", app.MQTTUser)
-	fmt.Printf("app.MQTTPassword : %s \n", app.MQTTPassword)
-	fmt.Printf("app.MQTTTopicName: %s \n", app.MQTTTopicName)
-	fmt.Printf("app.DSN          : %s \n", app.DSN)
+	log.Printf("app.MQTTURL      : %s \n", app.MQTTURL)
+	log.Printf("app.MQTTUser     : %s \n", app.MQTTUser)
+	log.Printf("app.MQTTPassword : %s \n", app.MQTTPassword)
+	log.Printf("app.MQTTTopicName: %s \n", app.MQTTTopicName)
+	log.Printf("app.DSN          : %s \n", app.DSN)
 }
 
 func main() {
 	connRDBMS, err := app.connectToDB()
 	if err != nil {
-		fmt.Printf(fmt.Sprintf("Error %s", err))
+		log.Fatalf(fmt.Sprintf("Error %s", err))
 	}
 	defer connRDBMS.Close()
 
@@ -79,7 +80,7 @@ func main() {
 	client := mqtt.NewClient(opts)
 
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(fmt.Sprintf("Error connecting to MQTT broker: %s", token.Error()))
+		log.Fatalf(fmt.Sprintf("Error connecting to MQTT broker: %s", token.Error()))
 	}
 
 	topicFilter := map[string]byte{
@@ -94,7 +95,7 @@ func main() {
 	}
 
 	if token := client.SubscribeMultiple(topicFilter, onMessageReceived); token.Wait() && token.Error() != nil {
-		panic(fmt.Sprintf("Error subscribing to topic: %s", token.Error()))
+		log.Fatalf(fmt.Sprintf("Error subscribing to topic: %s", token.Error()))
 	}
 
 	// Wait for a signal to exit the program gracefully
@@ -107,9 +108,9 @@ func main() {
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
+	log.Println("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	fmt.Printf("Connect lost: %v", err)
+	log.Printf("Connect lost: %v", err)
 }
