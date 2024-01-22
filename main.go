@@ -44,7 +44,7 @@ func init() {
 		log.Println("app.Env NON settato, carico i dati dal file .env")
 		godotenv.Load() // The Original .env
 		app.Env = os.Getenv("Env")
-		fmt.Printf("app.Env          : %s \n", app.Env)
+		log.Printf("app.Env          : %s \n", app.Env)
 	}
 
 	app.MQTTURL = os.Getenv("mqtt.url")
