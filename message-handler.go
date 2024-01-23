@@ -63,13 +63,15 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 
 	if stationData.TotalProductionRead && stationData.FeedInRead && stationData.BatteryChargeRead {
 		stationData.SelfUsed = stationData.TotalProduction - stationData.FeedIn - stationData.BatteryCharge
+		stationData.SelfUsedRead = true
 	}
 
 	if stationData.TotalConsumptionRead && stationData.PowerPurchasedRead && stationData.BatteryDischargeRead {
 		stationData.Production = stationData.TotalConsumption - stationData.PowerPurchased - stationData.BatteryDischarge
+		stationData.ProductionRead = true
 	}
 
-	if stationData.SelfUsed > 0 && stationData.Production > 0 && !stationData.LastUpdateTime.IsZero() {
+	if stationData.SelfUsedRead && stationData.ProductionRead && !stationData.LastUpdateTimeRead {
 		// Scrivi nel db
 		_, err := RetryWithBackoff(app.DB.InsertStationData, 5, 2*time.Second, stationData)
 		if err != nil {
