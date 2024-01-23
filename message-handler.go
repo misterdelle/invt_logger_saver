@@ -71,7 +71,7 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 		stationData.ProductionRead = true
 	}
 
-	if stationData.SelfUsedRead && stationData.ProductionRead && !stationData.LastUpdateTimeRead {
+	if stationData.SelfUsedRead && stationData.ProductionRead && stationData.LastUpdateTimeRead {
 		// Scrivi nel db
 		_, err := RetryWithBackoff(app.DB.InsertStationData, 5, 2*time.Second, stationData)
 		if err != nil {
