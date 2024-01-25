@@ -27,9 +27,10 @@ func (m *PostgresDBRepo) InsertStationData(args ...interface{}) (interface{}, er
 	// PowerPurchased   int
 	// BatteryDischarge int
 	// Production       int
+	// BatterySOC       int
 
-	stmt := `insert into "Station".Station (last_update_ts, total_production, feed_in, battery_charge, self_used, total_consumption, power_purchased, battery_discharge, production)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	stmt := `insert into "Station".Station (last_update_ts, total_production, feed_in, battery_charge, self_used, total_consumption, power_purchased, battery_discharge, production, battery_soc)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	row := m.DB.QueryRowContext(ctx, stmt,
 		stationData.LastUpdateTime,
@@ -41,6 +42,7 @@ func (m *PostgresDBRepo) InsertStationData(args ...interface{}) (interface{}, er
 		stationData.PowerPurchased,
 		stationData.BatteryDischarge,
 		stationData.Production,
+		stationData.BatterySOC,
 	)
 
 	if row.Err() != nil {

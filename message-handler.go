@@ -50,6 +50,11 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 		stationData.BatteryDischargeRead = true
 	}
 
+	if msgTopic == app.MQTTTopicName+"/station/batterySOC" {
+		stationData.BatterySOC = fromByteArrayToFloat32(msgPayload)
+		stationData.BatterySOCRead = true
+	}
+
 	if msgTopic == app.MQTTTopicName+"/station/lastUpdateTime" {
 		// 2024-01-19 10:28:48
 		lastUpdate := strings.TrimSpace(string(msgPayload))
@@ -71,7 +76,7 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 		stationData.ProductionRead = true
 	}
 
-	if stationData.SelfUsedRead && stationData.ProductionRead && stationData.LastUpdateTimeRead {
+	if stationData.SelfUsedRead && stationData.ProductionRead && stationData.BatterySOCRead && stationData.LastUpdateTimeRead {
 		// Scrivi nel db
 		_, err := RetryWithBackoff(app.DB.InsertStationData, 5, 2*time.Second, stationData)
 		if err != nil {

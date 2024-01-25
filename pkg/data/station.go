@@ -21,6 +21,8 @@ type Station struct {
 	BatteryDischargeRead bool
 	Production           float32
 	ProductionRead       bool
+	BatterySOC           float32
+	BatterySOCRead       bool
 }
 
 func NewStation() Station {
