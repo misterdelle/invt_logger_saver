@@ -75,6 +75,7 @@ func main() {
 	opts.SetClientID("go_mqtt_client")
 	opts.SetUsername(app.MQTTUser)
 	opts.SetPassword(app.MQTTPassword)
+	opts.SetConnectRetry(true)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
