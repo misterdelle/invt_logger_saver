@@ -2,3 +2,4 @@
 .env.prod
 .env.svil.local
 .env.svil.remote
+mosquitto-test

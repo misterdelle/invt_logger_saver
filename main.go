@@ -26,6 +26,7 @@ type application struct {
 	MQTTTopicName string
 	DSN           string
 	DB            repository.DatabaseRepository
+	MQTTClient    mqtt.Client
 }
 
 var (
@@ -78,12 +79,49 @@ func main() {
 	opts.SetConnectRetry(true)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	client := mqtt.NewClient(opts)
+	// client := mqtt.NewClient(opts)
+	app.MQTTClient = mqtt.NewClient(opts)
 
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
+	if token := app.MQTTClient.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf(fmt.Sprintf("Error connecting to MQTT broker: %s", token.Error()))
 	}
 
+	// topicFilter := map[string]byte{
+	// 	app.MQTTTopicName + "/station/lastUpdateTime":            0,
+	// 	app.MQTTTopicName + "/station/purchasingDayEnergy":       0,
+	// 	app.MQTTTopicName + "/station/batteryChargeDayEnergy":    0,
+	// 	app.MQTTTopicName + "/station/batterySOC":                0,
+	// 	app.MQTTTopicName + "/station/gridDayEnergy":             0,
+	// 	app.MQTTTopicName + "/station/pvDayEnergy":               0,
+	// 	app.MQTTTopicName + "/station/batteryDischargeDayEnergy": 0,
+	// 	app.MQTTTopicName + "/station/loadDayEnergy":             0,
+	// }
+
+	// if token := app.MQTTClient.SubscribeMultiple(topicFilter, onMessageReceived); token.Wait() && token.Error() != nil {
+	// 	log.Fatalf(fmt.Sprintf("Error subscribing to topic: %s", token.Error()))
+	// }
+
+	go app.subscribeTopic()
+
+	// Wait for a signal to exit the program gracefully
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	app.MQTTClient.Unsubscribe(app.MQTTTopicName)
+	app.MQTTClient.Disconnect(250)
+}
+
+var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+	log.Println("Connected")
+	go app.subscribeTopic()
+}
+
+var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+	log.Printf("Connect lost: %v", err)
+}
+
+func (app *application) subscribeTopic() {
 	topicFilter := map[string]byte{
 		app.MQTTTopicName + "/station/lastUpdateTime":            0,
 		app.MQTTTopicName + "/station/purchasingDayEnergy":       0,
@@ -95,23 +133,7 @@ func main() {
 		app.MQTTTopicName + "/station/loadDayEnergy":             0,
 	}
 
-	if token := client.SubscribeMultiple(topicFilter, onMessageReceived); token.Wait() && token.Error() != nil {
+	if token := app.MQTTClient.SubscribeMultiple(topicFilter, onMessageReceived); token.Wait() && token.Error() != nil {
 		log.Fatalf(fmt.Sprintf("Error subscribing to topic: %s", token.Error()))
 	}
-
-	// Wait for a signal to exit the program gracefully
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
-
-	client.Unsubscribe(app.MQTTTopicName)
-	client.Disconnect(250)
-}
-
-var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	log.Println("Connected")
-}
-
-var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Printf("Connect lost: %v", err)
 }
