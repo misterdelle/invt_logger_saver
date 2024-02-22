@@ -19,18 +19,20 @@ import (
 )
 
 type application struct {
-	Env           string
-	MQTTURL       string
-	MQTTUser      string
-	MQTTPassword  string
-	MQTTTopicName string
-	DSN           string
-	DB            repository.DatabaseRepository
-	MQTTClient    mqtt.Client
+	Env            string
+	MQTTURL        string
+	MQTTUser       string
+	MQTTPassword   string
+	MQTTTopicName  string
+	DSN            string
+	DB             repository.DatabaseRepository
+	MQTTClient     mqtt.Client
+	TelegramToken  string
+	TelegramChatID string
 }
 
 var (
-	app         = application{}
+	app         = application{TelegramChatID: "529623659"}
 	stationData = data.NewStation()
 )
 
@@ -53,12 +55,16 @@ func init() {
 	app.MQTTPassword = os.Getenv("mqtt.password")
 	app.MQTTTopicName = os.Getenv("mqtt.prefix")
 	app.DSN = os.Getenv("DSN")
+	app.TelegramToken = os.Getenv("TELEGRAM_TOKEN")
+	app.TelegramChatID = os.Getenv("TELEGRAM_CHAT_ID")
 
-	log.Printf("app.MQTTURL      : %s \n", app.MQTTURL)
-	log.Printf("app.MQTTUser     : %s \n", app.MQTTUser)
-	log.Printf("app.MQTTPassword : %s \n", app.MQTTPassword)
-	log.Printf("app.MQTTTopicName: %s \n", app.MQTTTopicName)
-	log.Printf("app.DSN          : %s \n", app.DSN)
+	log.Printf("app.MQTTURL       : %s \n", app.MQTTURL)
+	log.Printf("app.MQTTUser      : %s \n", app.MQTTUser)
+	log.Printf("app.MQTTPassword  : %s \n", app.MQTTPassword)
+	log.Printf("app.MQTTTopicName : %s \n", app.MQTTTopicName)
+	log.Printf("app.DSN           : %s \n", app.DSN)
+	log.Printf("app.TelegramToken : %s \n", app.TelegramToken)
+	log.Printf("app.TelegramChatID: %s \n", app.TelegramChatID)
 }
 
 func main() {
@@ -85,21 +91,6 @@ func main() {
 	if token := app.MQTTClient.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf(fmt.Sprintf("Error connecting to MQTT broker: %s", token.Error()))
 	}
-
-	// topicFilter := map[string]byte{
-	// 	app.MQTTTopicName + "/station/lastUpdateTime":            0,
-	// 	app.MQTTTopicName + "/station/purchasingDayEnergy":       0,
-	// 	app.MQTTTopicName + "/station/batteryChargeDayEnergy":    0,
-	// 	app.MQTTTopicName + "/station/batterySOC":                0,
-	// 	app.MQTTTopicName + "/station/gridDayEnergy":             0,
-	// 	app.MQTTTopicName + "/station/pvDayEnergy":               0,
-	// 	app.MQTTTopicName + "/station/batteryDischargeDayEnergy": 0,
-	// 	app.MQTTTopicName + "/station/loadDayEnergy":             0,
-	// }
-
-	// if token := app.MQTTClient.SubscribeMultiple(topicFilter, onMessageReceived); token.Wait() && token.Error() != nil {
-	// 	log.Fatalf(fmt.Sprintf("Error subscribing to topic: %s", token.Error()))
-	// }
 
 	go app.subscribeTopic()
 

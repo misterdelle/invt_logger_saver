@@ -1,6 +1,9 @@
 package data
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Station struct {
 	LastUpdateTime       time.Time
@@ -27,4 +30,20 @@ type Station struct {
 
 func NewStation() Station {
 	return Station{}
+}
+
+func (s *Station) String() string {
+	ret := "Station: \n"
+	ret += fmt.Sprintf("LastUpdateTime: %s  \n", s.LastUpdateTime.String())
+	ret += fmt.Sprintf("TotalProduction: %.2f \n", s.TotalProduction)
+	ret += fmt.Sprintf("FeedIn: %.2f \n", s.FeedIn)
+	ret += fmt.Sprintf("BatteryCharge: %.2f \n", s.BatteryCharge)
+	ret += fmt.Sprintf("SelfUsed: %.2f \n", s.SelfUsed)
+	ret += fmt.Sprintf("TotalConsumption: %.2f \n", s.TotalConsumption)
+	ret += fmt.Sprintf("PowerPurchased: %.2f \n", s.PowerPurchased)
+	ret += fmt.Sprintf("BatteryDischarge: %.2f \n", s.BatteryDischarge)
+	ret += fmt.Sprintf("Production: %.2f \n", s.Production)
+	ret += fmt.Sprintf("BatterySOC: %.2f \n", s.BatterySOC)
+
+	return ret
 }

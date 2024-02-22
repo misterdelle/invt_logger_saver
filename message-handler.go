@@ -2,9 +2,12 @@ package main
 
 import (
 	// "fmt"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"invt_logger_saver/pkg/data"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -83,6 +86,10 @@ func parseStationData(msgPayload []byte, msgTopic string) {
 			log.Println(fmt.Sprintf("Error %s", err))
 		}
 
+		if stationData.LastUpdateTime.Minute() == 0 || stationData.LastUpdateTime.Minute() == 30 {
+			go sendTelegramMessage(stationData.String())
+		}
+
 		stationData = data.NewStation()
 	}
 
@@ -97,4 +104,25 @@ func fromByteArrayToFloat32(b []byte) float32 {
 	}
 
 	return float32(num)
+}
+
+func sendTelegramMessage(text string) {
+
+	request_url := "https://api.telegram.org/bot" + app.TelegramToken + "/sendMessage"
+	log.Println(fmt.Sprintf("Request URL %s", request_url))
+
+	client := &http.Client{}
+
+	values := map[string]string{"text": text, "chat_id": app.TelegramChatID}
+	json_paramaters, _ := json.Marshal(values)
+	log.Println(fmt.Sprintf("json_paramaters %s", json_paramaters))
+
+	req, _ := http.NewRequest("POST", request_url, bytes.NewBuffer(json_paramaters))
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }
