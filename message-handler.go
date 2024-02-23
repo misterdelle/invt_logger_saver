@@ -114,13 +114,25 @@ func sendTelegramMessage(text string) {
 	client := &http.Client{}
 
 	values := map[string]string{"text": text, "chat_id": app.TelegramChatID}
-	json_paramaters, _ := json.Marshal(values)
-	log.Println(fmt.Sprintf("json_paramaters %s", json_paramaters))
+	json_parameters, _ := json.Marshal(values)
+	log.Println(fmt.Sprintf("json_paramaters %s", json_parameters))
 
-	req, _ := http.NewRequest("POST", request_url, bytes.NewBuffer(json_paramaters))
+	req, _ := http.NewRequest("POST", request_url, bytes.NewBuffer(json_parameters))
 	req.Header.Set("Content-Type", "application/json")
 
 	_, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	values["text"] = "/start"
+	json_parameters, _ = json.Marshal(values)
+
+	req, _ = http.NewRequest("POST", request_url, bytes.NewBuffer(json_parameters))
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err = client.Do(req)
 
 	if err != nil {
 		fmt.Println(err)
